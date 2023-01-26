@@ -9,14 +9,17 @@ services:
     networks:
       - container-network
     ports:
-    - target: 80
-      published: 80
+    - 80:80
+    - 443:443
     volumes:
       - ./log/nginx:/var/log/nginx
-      - ./web-server/nginx.conf:/etc/nginx/nginx.conf
+      - ./web-server/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./web-server/upstream:/etc/nginx/upstream
       - ./web-server/servers:/etc/nginx/servers
       - ./web-server/templates:/etc/nginx/templates
+    environment:
+      - TZ=${TIMEZONE}
+      - NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx/servers
 
 networks:
   container-network:
