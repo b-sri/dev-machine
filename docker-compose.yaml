@@ -12,6 +12,7 @@ services:
     - target: 80
       published: 80
     volumes:
+      - ./log/nginx:/var/log/nginx
       - ./web-server/nginx.conf:/etc/nginx/nginx.conf
       - ./web-server/upstream:/etc/nginx/upstream
       - ./web-server/servers:/etc/nginx/servers
