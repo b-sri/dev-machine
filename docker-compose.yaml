@@ -17,9 +17,24 @@ services:
       - ./web-server/upstream:/etc/nginx/upstream
       - ./web-server/servers:/etc/nginx/servers
       - ./web-server/templates:/etc/nginx/templates
-    environment:
-      - TZ=${TIMEZONE}
-      - NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx/servers
+      - ./certbot/certs:/etc/letsencrypt
+      - ./certbot/challenge:/var/www/certbot
+    env_file:
+      - ./.env
+
+  certbot:
+    image: certbot/certbot
+    build: ./certbot/build
+    container_name: certbot
+    networks:
+      - container-network
+    volumes:
+      - ./certbot/build/parse_servers.sh:/opt/parse_servers.sh
+      - ./certbot/certs:/etc/letsencrypt
+      - ./certbot/challenge:/var/www/certbot
+      - ./web-server/templates:/tmp/servers
+    env_file:
+      - ./.env
 
 networks:
   container-network:
