@@ -3,7 +3,7 @@ version: '3.4'
 services:
   web-server:
     image: nginx
-    build: ./web-server/build
+    build: ./web-server/build/
     container_name: web-server
     restart: unless-stopped
     networks:
@@ -24,7 +24,7 @@ services:
 
   certbot:
     image: certbot/certbot
-    build: ./certbot/build
+    build: ./certbot/build/
     container_name: certbot
     networks:
       - container-network
@@ -32,7 +32,7 @@ services:
       - ./certbot/build/parse_servers.sh:/opt/parse_servers.sh
       - ./certbot/certs:/etc/letsencrypt
       - ./certbot/challenge:/var/www/certbot
-      - ./web-server/templates:/tmp/servers
+      - ./certbot/log/certbot:/var/log/
     env_file:
       - ./.env
 
