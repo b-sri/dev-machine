@@ -15,7 +15,6 @@ services:
       - ./log/nginx:/var/log/nginx
       - ./web-server/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./web-server/upstream:/etc/nginx/upstream
-      - ./web-server/servers:/etc/nginx/servers
       - ./web-server/templates:/etc/nginx/templates
       - ./certbot/certs:/etc/letsencrypt
       - ./certbot/challenge:/var/www/certbot
@@ -29,7 +28,6 @@ services:
     networks:
       - container-network
     volumes:
-      - ./certbot/build/parse_servers.sh:/opt/parse_servers.sh
       - ./certbot/certs:/etc/letsencrypt
       - ./certbot/challenge:/var/www/certbot
       - ./certbot/log/certbot:/var/log/

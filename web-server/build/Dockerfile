@@ -1,7 +1,8 @@
 FROM nginx:1.23.3-alpine-slim
 
 RUN apk update && \
-    apk upgrade
+    apk upgrade && \
+    mkdir -p /etc/nginx/servers
 
 RUN \
     build_pkgs="build-base linux-headers openssl-dev pcre-dev wget zlib-dev git curl" && \
