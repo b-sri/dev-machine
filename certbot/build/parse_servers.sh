@@ -15,6 +15,6 @@ while read -r line; do
         --rsa-key-size "${CERTBOT_RSA_KEY_SIZE:-4096}" \
         --agree-tos \
         --noninteractive \
-        --verbose || true
+        --verbose || true 2>&1 | tee -a /var/log/certbot/certbot.log
     done < ${input}
 rm ${input}

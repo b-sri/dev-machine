@@ -1,26 +1,39 @@
-FROM nginx:1.23.3-alpine-slim
+FROM alpine
 
 RUN apk update && \
-    apk upgrade && \
-    mkdir -p /etc/nginx/servers
+    apk upgrade
 
 RUN \
     build_pkgs="build-base linux-headers openssl-dev pcre-dev wget zlib-dev git curl" && \
     runtime_pkgs="ca-certificates openssl pcre zlib tzdata" && \
     apk --no-cache --virtual add ${build_pkgs} ${runtime_pkgs}
 
+ENV NGINX_VERSION nginx-1.23.3
 
-RUN cd /tmp && \
-    wget http://nginx.org/download/nginx-1.23.3.tar.gz && \
-    tar zxvf nginx-1.23.3.tar.gz && \
+RUN apk --update add openssl-dev pcre-dev zlib-dev wget build-base && \
+    mkdir -p /tmp/src && \
+    cd /tmp/src && \
+    wget http://nginx.org/download/${NGINX_VERSION}.tar.gz && \
     git clone https://github.com/openresty/headers-more-nginx-module.git && \
     git clone https://github.com/nginx-modules/nginx-module-vts.git && \
-    cd /tmp/nginx-1.23.3 && \
-    ./configure --with-compat \
-    --add-dynamic-module=/tmp/nginx-module-vts \
-    --add-dynamic-module=/tmp/headers-more-nginx-module && \
-    make modules && \
-    cp /tmp/nginx-1.23.3/objs/*.so /etc/nginx/modules && \
+    tar -zxvf ${NGINX_VERSION}.tar.gz && \
+    cd /tmp/src/${NGINX_VERSION} && \
+    ./configure \
+        --with-http_ssl_module \
+        --with-http_gzip_static_module \
+        --prefix=/etc/nginx \
+        --http-log-path=/var/log/nginx/access.log \
+        --error-log-path=/var/log/nginx/error.log \
+        --sbin-path=/usr/local/sbin/nginx \
+        --add-dynamic-module=/tmp/src/nginx-module-vts \
+        --add-dynamic-module=/tmp/src/headers-more-nginx-module && \
+    make && \
+    make install && \
+    apk del build-base && \
+    rm -rf /tmp/src && \
+    rm -rf /var/cache/apk/* && \
+    mkdir -p /etc/nginx/servers && \
+    cp /tmp/src/{NGINX_VERSION}/objs/*.so /etc/nginx/modules && \
     chmod 644 /etc/nginx/modules/*.so
 
 # Create the directory where the content's going to be placed
@@ -45,3 +58,5 @@ RUN chmod +x /usr/local/sbin/install-ngxblocker && \
 RUN echo "00 22 * * * /usr/local/sbin/update-ngxblocker -e balaji.ts@beyonder.travel" > /tmp/crontab_tmp && \
     crontab /tmp/crontab_tmp && \
     rm /tmp/crontab_tmp
+
+ENTRYPOINT [ "/etc/init.d/nginx", "start" ]

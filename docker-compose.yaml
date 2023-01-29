@@ -2,7 +2,7 @@ version: '3.4'
 
 services:
   web-server:
-    image: nginx
+    image: alpine
     build: ./web-server/build/
     container_name: web-server
     restart: unless-stopped
@@ -22,7 +22,7 @@ services:
       - ./.env
 
   certbot:
-    image: certbot/certbot
+    image: alpine
     build: ./certbot/build/
     container_name: certbot
     networks:
@@ -30,7 +30,18 @@ services:
     volumes:
       - ./certbot/certs:/etc/letsencrypt
       - ./certbot/challenge:/var/www/certbot
-      - ./certbot/log/certbot:/var/log/
+      - ./log/certbot:/var/log/certbot
+    env_file:
+      - ./.env
+
+  cron:
+    image: alpine
+    build: ./cron/build/
+    container_name: cron
+    networks:
+      - container-network
+    volumes:
+      - ./log/cron:/var/log/cron
     env_file:
       - ./.env
 
