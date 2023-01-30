@@ -3,4 +3,3 @@ log/nginx/access.log
 log/certbot/certbot.log
 log/cron/cron.log
 web-server/servers
-web-server/scratch
