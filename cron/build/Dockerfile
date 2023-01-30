@@ -14,4 +14,4 @@ RUN chmod 0644 /etc/cron.d/cron-file
 
 RUN crontab /etc/cron.d/cron-file
 
-ENTRYPOINT [ "crond", "-f" ]
+CMD [ "crond", "-f" ]

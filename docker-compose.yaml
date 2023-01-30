@@ -2,7 +2,7 @@ version: '3.4'
 
 services:
   web-server:
-    image: alpine
+    image: alpine-nginx
     build: ./web-server/build/
     container_name: web-server
     restart: unless-stopped
@@ -22,7 +22,7 @@ services:
       - ./.env
 
   certbot:
-    image: alpine
+    image: alpine-certbot
     build: ./certbot/build/
     container_name: certbot
     networks:
@@ -35,7 +35,7 @@ services:
       - ./.env
 
   cron:
-    image: alpine
+    image: alpine-cron
     build: ./cron/build/
     container_name: cron
     networks:
