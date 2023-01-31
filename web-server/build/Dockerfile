@@ -2,10 +2,13 @@ FROM nginx:1.23.3-alpine-slim
 
 RUN apk update && \
     apk upgrade && \
-    mkdir -p /etc/nginx/servers
+    mkdir -p /etc/nginx/servers && \
+    unlink /var/log/nginx/access.log && \
+    unlink /var/log/nginx/error.log && \
+    mkdir -p /var/www/${DOMAIN_LIST}
 
 RUN \
-    build_pkgs="build-base linux-headers openssl-dev pcre-dev wget zlib-dev git curl" && \
+    build_pkgs="build-base linux-headers openssl-dev pcre-dev wget zlib-dev git curl bash" && \
     runtime_pkgs="ca-certificates openssl pcre zlib tzdata" && \
     apk --no-cache --virtual add ${build_pkgs} ${runtime_pkgs}
 
@@ -23,23 +26,26 @@ RUN cd /tmp && \
     cp /tmp/nginx-1.23.3/objs/*.so /etc/nginx/modules && \
     chmod 644 /etc/nginx/modules/*.so
 
-# Create the directory where the content's going to be placed
+# RUN \
+#     input="/tmp/domain-list" && \
+#     grep "server_name" /etc/nginx/servers/ > ${input} && \
+#     while read -r line; do \
+#         domain=`echo ${line} | awk '{print $3}'`;\
+#         echo ${domain} >> /var/log/nginx/access.log; \
+#         mkdir -p "/var/www/${domain}"; \
+#         cp /usr/share/nginx/html/* /var/www/${domain}; \
+#     done < ${input} && \
+#     rm ${input}
+
 RUN \
     adduser -D -S -G 'www-data' -h /var/www www-data && \
-    mkdir -p /var/www/beyonder && \
     chown -R www-data:www-data /var/www && \
     chmod -R 754 /var/www
 
 RUN \
     rm -rf /tmp/* && \
     apk del ${build_pkgs} && \
-    rm -rf /var/cache/apk/*
+    rm -rf /var/cache/apk/* && \
+    rm -f /etc/nginx/conf.d/default.conf
 
-ADD https://raw.githubusercontent.com/mitchellkrogza/nginx-ultimate-bad-bot-blocker/master/install-ngxblocker /usr/local/sbin/install-ngxblocker
-
-RUN chmod +x /usr/local/sbin/install-ngxblocker && \
-    install-ngxblocker -x && \
-    chmod +x /usr/local/sbin/*ngxblocker && \ 
-    setup-ngxblocker -x
-    
 CMD [ "nginx", "-g", "daemon off;" ]

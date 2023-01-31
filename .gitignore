@@ -3,3 +3,4 @@ log/nginx/access.log
 log/certbot/certbot.log
 log/cron/cron.log
 web-server/servers
+log/badbot-blocker/badbot-blocker.log

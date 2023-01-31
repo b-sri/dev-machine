@@ -4,7 +4,7 @@ server {
     server_name  beyonder.travel www.beyonder.travel;
 
     location / {
-        root   /usr/share/nginx/html;
+        root   /var/www/beyonder.travel/nginx/html;
         index  index.html index.htm;
     }
 

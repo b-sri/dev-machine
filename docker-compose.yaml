@@ -12,13 +12,16 @@ services:
     - 80:80
     - 443:443
     volumes:
-      - ./log/nginx:/var/log/nginx
+      - ./log/nginx/:/var/log/nginx/
       - ./web-server/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./web-server/upstream:/etc/nginx/upstream
-      - ./web-server/templates:/etc/nginx/templates
+      - ./web-server/upstream:/etc/nginx/upstream:ro
+      - ./web-server/templates:/etc/nginx/templates:ro
+      - conf:/etc/nginx/conf.d
+      - bots:/etc/nginx/bots.d
       - servers:/etc/nginx/servers
       - certs:/etc/letsencrypt
       - challenge:/var/www/certbot
+      - web_content:/var/www
     env_file:
       - ./.env
 
@@ -26,7 +29,6 @@ services:
     image: alpine-certbot
     build: ./certbot/build/
     container_name: certbot
-    tty: true
     depends_on:
       - web-server
     networks:
@@ -39,19 +41,37 @@ services:
     env_file:
       - ./.env
 
-  cron:
-    image: alpine-cron
-    build: ./cron/build/
-    container_name: cron
+  badbot-blocker:
+    image: alpine-badbot-blocker
+    build: ./badbot-blocker/build
+    container_name: badbot-blocker
     depends_on:
       - web-server
-      - certbot
     networks:
       - container-network
     volumes:
-      - ./log/cron:/var/log/cron
+      - ./web-server/nginx.conf:/etc/nginx/nginx.conf:rw
+      - ./log/badbot-blocker:/var/log/badbot-blocker
+      - conf:/etc/nginx/conf.d:rw
+      - bots:/etc/nginx/bots.d:rw
+      - servers:/etc/nginx/sites-available
+      - web_content:/var/www
     env_file:
       - ./.env
+
+  # cron:
+  #   image: alpine-cron
+  #   build: ./cron/build/
+  #   container_name: cron
+  #   depends_on:
+  #     - web-server
+  #     - certbot
+  #   networks:
+  #     - container-network
+  #   volumes:
+  #     - ./log/cron:/var/log/cron
+  #   env_file:
+  #     - ./.env
 
 networks:
   container-network:
@@ -60,6 +80,14 @@ networks:
 
 volumes:
   certs:
+    name: certs
   challenge:
+    name: challenge
   servers:
-      
+    name: servers
+  conf:
+    name: conf
+  bots:
+    name: bots
+  web_content:
+    name: web_content
