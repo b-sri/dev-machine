@@ -16,8 +16,9 @@ services:
       - ./web-server/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./web-server/upstream:/etc/nginx/upstream
       - ./web-server/templates:/etc/nginx/templates
-      - ./certbot/certs:/etc/letsencrypt
-      - ./certbot/challenge:/var/www/certbot
+      - servers:/etc/nginx/servers
+      - certs:/etc/letsencrypt
+      - challenge:/var/www/certbot
     env_file:
       - ./.env
 
@@ -25,12 +26,16 @@ services:
     image: alpine-certbot
     build: ./certbot/build/
     container_name: certbot
+    tty: true
+    depends_on:
+      - web-server
     networks:
       - container-network
     volumes:
-      - ./certbot/certs:/etc/letsencrypt
-      - ./certbot/challenge:/var/www/certbot
       - ./log/certbot:/var/log/certbot
+      - servers:/etc/nginx/servers:ro
+      - certs:/etc/letsencrypt
+      - challenge:/var/www/certbot
     env_file:
       - ./.env
 
@@ -38,6 +43,9 @@ services:
     image: alpine-cron
     build: ./cron/build/
     container_name: cron
+    depends_on:
+      - web-server
+      - certbot
     networks:
       - container-network
     volumes:
@@ -49,3 +57,9 @@ networks:
   container-network:
     name: internal-network
     driver: bridge
+
+volumes:
+  certs:
+  challenge:
+  servers:
+      
